@@ -13,6 +13,40 @@ st.set_page_config(page_title="PM Personality Test", layout="wide")
 if "page" not in st.session_state:
     st.session_state.page = 1
 
+
+# -------------------- TYPE + AVENGER DEFINITIONS --------------------
+type_descriptions = {
+    "The Gantt Captain": ("You thrive on structure, execution, and getting things done step by step.", "Realistic (R)", "📈"),
+    "Spreadsheet Detective": ("You love diving into data, finding patterns, and solving logic puzzles.", "Investigative (I)", "🕵️"),
+    "Agile Picasso": ("You’re visual, flexible, and thrive on creative problem-solving.", "Artistic (A)", "🎨"),
+    "PM Therapist": ("You care deeply about your team and believe collaboration drives success.", "Social (S)", "💬"),
+    "PowerPoint Gladiator": ("You love the spotlight, persuasion, and presenting bold ideas.", "Enterprising (E)", "🎤"),
+    "Governance Guardian": ("You keep things structured, organized, and compliant.", "Conventional (C)", "🛡️"),
+}
+
+avenger_traits = {
+    "Iron Man": "🧠 Strategic, inventive, and always two steps ahead.",
+    "Captain America": "🛡️ Loyal, brave, and a natural leader.",
+    "Thor": "⚡ Powerful, noble, and sometimes unpredictable.",
+    "Black Widow": "🕵️ Strategic, calm under pressure, and always a step ahead.",
+    "Hulk": "💪 Strong, passionate, and surprisingly thoughtful.",
+    "Doctor Strange": "🔮 Wise, mystical, and a master of complex situations.",
+    "Spider-Man": "🕸️ Clever, quick, and full of energy.",
+    "Black Panther": "🐾 Noble, resourceful, and grounded in purpose.",
+    "Other": "🌟 Unique — just like your hero choice!",
+}
+
+avenger_images = {
+    "Iron Man": "https://i.ibb.co/7y0m1nV/ironman.jpg",
+    "Captain America": "https://i.ibb.co/7n1fcTg/captainamerica.jpg",
+    "Thor": "https://i.ibb.co/XDX85Kt/thor.jpg",
+    "Black Widow": "https://i.ibb.co/5Gr1Ly9/blackwidow.jpg",
+    "Hulk": "https://i.ibb.co/5kWJKmB/hulk.jpg",
+    "Doctor Strange": "https://i.ibb.co/xYb2N1H/doctorstrange.jpg",
+    "Spider-Man": "https://i.ibb.co/5Rph3PZ/spiderman.jpg",
+    "Black Panther": "https://i.ibb.co/DQXT5S7/blackpanther.jpg"
+}
+
 # -------------------- PAGE 1 --------------------
 if st.session_state.page == 1:
     st.title("👤 Welcome to the PM Personality Test")
@@ -182,38 +216,6 @@ if st.sidebar.text_input("Admin password") == "admin123":
 
     st.stop()
 
-# -------------------- TYPE + AVENGER DEFINITIONS --------------------
-type_descriptions = {
-    "The Gantt Captain": ("You thrive on structure, execution, and getting things done step by step.", "Realistic (R)", "📈"),
-    "Spreadsheet Detective": ("You love diving into data, finding patterns, and solving logic puzzles.", "Investigative (I)", "🕵️"),
-    "Agile Picasso": ("You’re visual, flexible, and thrive on creative problem-solving.", "Artistic (A)", "🎨"),
-    "PM Therapist": ("You care deeply about your team and believe collaboration drives success.", "Social (S)", "💬"),
-    "PowerPoint Gladiator": ("You love the spotlight, persuasion, and presenting bold ideas.", "Enterprising (E)", "🎤"),
-    "Governance Guardian": ("You keep things structured, organized, and compliant.", "Conventional (C)", "🛡️"),
-}
-
-avenger_traits = {
-    "Iron Man": "🧠 Strategic, inventive, and always two steps ahead.",
-    "Captain America": "🛡️ Loyal, brave, and a natural leader.",
-    "Thor": "⚡ Powerful, noble, and sometimes unpredictable.",
-    "Black Widow": "🕵️ Strategic, calm under pressure, and always a step ahead.",
-    "Hulk": "💪 Strong, passionate, and surprisingly thoughtful.",
-    "Doctor Strange": "🔮 Wise, mystical, and a master of complex situations.",
-    "Spider-Man": "🕸️ Clever, quick, and full of energy.",
-    "Black Panther": "🐾 Noble, resourceful, and grounded in purpose.",
-    "Other": "🌟 Unique — just like your hero choice!",
-}
-
-avenger_images = {
-    "Iron Man": "https://i.ibb.co/7y0m1nV/ironman.jpg",
-    "Captain America": "https://i.ibb.co/7n1fcTg/captainamerica.jpg",
-    "Thor": "https://i.ibb.co/XDX85Kt/thor.jpg",
-    "Black Widow": "https://i.ibb.co/5Gr1Ly9/blackwidow.jpg",
-    "Hulk": "https://i.ibb.co/5kWJKmB/hulk.jpg",
-    "Doctor Strange": "https://i.ibb.co/xYb2N1H/doctorstrange.jpg",
-    "Spider-Man": "https://i.ibb.co/5Rph3PZ/spiderman.jpg",
-    "Black Panther": "https://i.ibb.co/DQXT5S7/blackpanther.jpg"
-}
 
 # ✅ Confirm email was sent
 if st.session_state.get("page") == 3:
