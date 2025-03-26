@@ -151,41 +151,41 @@ elif st.session_state.page == 2:
         st.session_state.page = 3
         st.session_state.scores = scores
         st.session_state.answers = answers
-
-# -------------------- EMAIL FUNCTION --------------------
-def send_email(recipient, subject, body):
-    sender = st.secrets["email"]["address"]
-    app_password = st.secrets["email"]["app_password"]
-
-    msg = MIMEText(body, "plain", "utf-8")
-    msg["Subject"] = subject
-    msg["From"] = f"PM Personality Team <{sender}>"
-    msg["To"] = recipient
-
-    try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(sender, app_password)
-            server.send_message(msg)
-        return True
-    except Exception as e:
-        return f"Email sending failed: {str(e)}"
+    
+    # -------------------- EMAIL FUNCTION --------------------
+    def send_email(recipient, subject, body):
+        sender = st.secrets["email"]["address"]
+        app_password = st.secrets["email"]["app_password"]
+    
+        msg = MIMEText(body, "plain", "utf-8")
+        msg["Subject"] = subject
+        msg["From"] = f"PM Personality Team <{sender}>"
+        msg["To"] = recipient
+    
+        try:
+            with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+                server.login(sender, app_password)
+                server.send_message(msg)
+            return True
+        except Exception as e:
+            return f"Email sending failed: {str(e)}"
         
-# -------------------- GOOGLE SHEET FUNCTION --------------------
-def save_to_google_sheet(data_row):
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["gcp_service_account"], scope)
-    client = gspread.authorize(creds)
-
-    sheet = client.open("PM-Personality_Test").sheet1  # Make sure this matches your sheet name
-    sheet.append_row(data_row)
-def load_data():
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["gcp_service_account"], scope)
-    client = gspread.authorize(creds)
-
-    sheet = client.open("PM-Personality_Test").sheet1  # Make sure the name matches your sheet
-    data = sheet.get_all_records()
-    return pd.DataFrame(data)
+    # -------------------- GOOGLE SHEET FUNCTION --------------------
+    def save_to_google_sheet(data_row):
+        scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["gcp_service_account"], scope)
+        client = gspread.authorize(creds)
+    
+        sheet = client.open("PM-Personality_Test").sheet1  # Make sure this matches your sheet name
+        sheet.append_row(data_row)
+    def load_data():
+        scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["gcp_service_account"], scope)
+        client = gspread.authorize(creds)
+    
+        sheet = client.open("PM-Personality_Test").sheet1  # Make sure the name matches your sheet
+        data = sheet.get_all_records()
+        return pd.DataFrame(data)
 
 # -------------------- PAGE 3: RESULTS --------------------
 elif st.session_state.page == 3:
@@ -211,21 +211,21 @@ elif st.session_state.page == 3:
     st.subheader(f"🦸 Your Favorite Avenger: {avenger}")
     st.markdown(avenger_desc)
 
-#-------------------Google Sheet---------------------
-# Prepare row for Google Sheet
-now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-email = st.session_state.email
-country = st.session_state.country
-role = st.session_state.role
-avenger = st.session_state.avenger
-answers_raw = ", ".join(st.session_state.answers)
-pm_types = ", ".join(top_types)
-holland = ", ".join(holland_codes)
-
-data_row = [now, email, country, role, pm_types, holland, avenger, answers_raw]
-
-# Save to Google Sheet
-save_to_google_sheet(data_row)
+    #-------------------Google Sheet---------------------
+    # Prepare row for Google Sheet
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    email = st.session_state.email
+    country = st.session_state.country
+    role = st.session_state.role
+    avenger = st.session_state.avenger
+    answers_raw = ", ".join(st.session_state.answers)
+    pm_types = ", ".join(top_types)
+    holland = ", ".join(holland_codes)
+    
+    data_row = [now, email, country, role, pm_types, holland, avenger, answers_raw]
+    
+    # Save to Google Sheet
+    save_to_google_sheet(data_row)
 
     # ---------------- EMAIL & Share Button ----------------
     email_lines = [
