@@ -119,19 +119,6 @@ elif st.session_state.page == 3:
 
 
 
-# ✅ Option to share with friends
-st.markdown("---")
-st.markdown("### 💌 Want your friends to try the test too?")
-share_url = "https://pm-o-test-app.streamlit.app/"  # ← Replace with your actual app link
-
-col1, col2 = st.columns([1, 1])
-with col1:
-    if st.button("🔁 Start Over"):
-        st.session_state.clear()  # Resets everything
-        st.rerun()
-
-with col2:
-    st.markdown(f"[🌐 Share This Test]({share_url})", unsafe_allow_html=True)
 
 # -------------------- EMAIL FUNCTION --------------------
 def send_email(recipient, subject, body):
@@ -151,8 +138,7 @@ def send_email(recipient, subject, body):
     except Exception as e:
         return f"Email sending failed: {str(e)}"
         
-        # ✅ Confirm email was sent
-st.success("📧 Your result has been emailed to you!")
+
 
 # -------------------- GOOGLE SHEET FUNCTION --------------------
 def save_to_google_sheet(data_row):
@@ -227,3 +213,20 @@ avenger_images = {
     "Spider-Man": "https://i.ibb.co/5Rph3PZ/spiderman.jpg",
     "Black Panther": "https://i.ibb.co/DQXT5S7/blackpanther.jpg"
 }
+
+# ✅ Confirm email was sent
+if st.session_state.get("page") == 3:
+    st.success("📧 Your result has been emailed to you!")
+
+# ✅ Option to share with friends
+if st.session_state.get("page") == 3:
+    st.markdown("---")
+    st.markdown("### 💌 Want your friends to try the test too?")
+    share_url = "https://pm-o-test-app.streamlit.app/"
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        if st.button("🔁 Start Over"):
+            st.session_state.clear()
+            st.rerun()
+    with col2:
+        st.markdown(f"[🌐 Share This Test]({share_url})", unsafe_allow_html=True)
