@@ -6,6 +6,8 @@ from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
 import pandas as pd
 import matplotlib.pyplot as plt
+import urllib.parse
+
 
   # -------------------- EMAIL FUNCTION --------------------
 def send_email(recipient, subject, body):
@@ -281,19 +283,19 @@ elif st.session_state.page == 3:
     st.markdown("#### 📢 Share this test on:")
 
     linkedin_text = "Take the PM Personality Test and discover your project management style! 💼🧠"
-    twitter_text = "Discover your PM personality type in this fun test! 💼🧠 #ProjectManagement"
+  
 
     linkedin_share = f"https://www.linkedin.com/sharing/share-offsite/?url={share_url}"
-    twitter_share = f"https://twitter.com/intent/tweet?text={twitter_text}&url={share_url}"
     facebook_share = f"https://www.facebook.com/sharer/sharer.php?u={share_url}"
-    email_share = f"mailto:?subject=PM Personality Test&body=Check out this fun PM personality test! {share_url}"
-
-    col3, col4, col5, col6 = st.columns(4)
+    subject = "PM Personality Test"
+    body = f"Check out this fun PM personality test! {share_url}"
+    email_share = f"mailto:?subject={urllib.parse.quote(subject)}&body={urllib.parse.quote(body)}"
+    
+    col3, col4, col5 = st.columns(4)
     with col3:
         st.markdown(f"[🔗 LinkedIn]({linkedin_share})", unsafe_allow_html=True)
     with col4:
-        st.markdown(f"[🐦 Twitter/X]({twitter_share})", unsafe_allow_html=True)
+        st.markdown(f"[✉️ Email]({email_share})", unsafe_allow_html=True)
     with col5:
         st.markdown(f"[📘 Facebook]({facebook_share})", unsafe_allow_html=True)
-    with col6:
-        st.markdown(f"[✉️ Email]({email_share})", unsafe_allow_html=True)
+
