@@ -158,6 +158,18 @@ elif st.session_state.page == 3:
     st.markdown(avenger_desc)
 
 
+# ✅ Option to share with friends
+if st.session_state.get("page") == 3:
+    st.markdown("---")
+    st.markdown("### 💌 Want your friends to try the test too?")
+    share_url = "https://pm-o-test-app.streamlit.app/"
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        if st.button("🔁 Start Over"):
+            st.session_state.clear()
+            st.rerun()
+    with col2:
+        st.markdown(f"[🌐 Share This Test]({share_url})", unsafe_allow_html=True)
 
 
 # -------------------- EMAIL FUNCTION --------------------
@@ -178,6 +190,46 @@ def send_email(recipient, subject, body):
     except Exception as e:
         return f"Email sending failed: {str(e)}"
         
+# --------------Build the result email body-------------
+email_lines = [
+    "Hi there!",
+    "",
+    "Thanks for completing the PM Personality Test 🎯",
+    "",
+    "🧠 **Your PM Personality Type(s):**"
+]
+
+# Append each top type
+for ptype in top_types:
+    desc, holland, icon = type_descriptions[ptype]
+    email_lines.append(f"{icon} {ptype}")
+    email_lines.append(f"{desc}")
+    email_lines.append(f"🧩 Holland Code Match: {holland}")
+    email_lines.append("")
+
+# Add Avenger info
+email_lines.append(f"🦸 **Your Favorite Avenger:** {avenger}")
+email_lines.append(avenger_traits.get(avenger, "🌟 Unique — just like your hero choice!"))
+email_lines.append("")
+
+# Add other info
+email_lines.append(f"🌍 Country: {st.session_state.country}")
+email_lines.append(f"💼 Role: {st.session_state.role}")
+email_lines.append("")
+email_lines.append("Thank you for participating — may your projects be as epic as your personality!")
+email_lines.append("-- PM Personality Team")
+
+# Final email body string
+email_body = "\n".join(email_lines)
+
+
+if st.button("📧 Send my results by email"):
+    result = send_email(st.session_state.email, "Your PM Personality Test Results", email_body)
+    if result is True:
+        st.success("✅ Your result has been emailed!")
+    else:
+        st.error(f"❌ Failed to send email: {result}")
+
 
 
 # -------------------- GOOGLE SHEET FUNCTION --------------------
@@ -217,19 +269,4 @@ if st.sidebar.text_input("Admin password") == "admin123":
     st.stop()
 
 
-# ✅ Confirm email was sent
-if st.session_state.get("page") == 3:
-    st.success("📧 Your result has been emailed to you!")
 
-# ✅ Option to share with friends
-if st.session_state.get("page") == 3:
-    st.markdown("---")
-    st.markdown("### 💌 Want your friends to try the test too?")
-    share_url = "https://pm-o-test-app.streamlit.app/"
-    col1, col2 = st.columns([1, 1])
-    with col1:
-        if st.button("🔁 Start Over"):
-            st.session_state.clear()
-            st.rerun()
-    with col2:
-        st.markdown(f"[🌐 Share This Test]({share_url})", unsafe_allow_html=True)
