@@ -4,6 +4,8 @@ from email.mime.text import MIMEText
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
+import pandas as pd
+import matplotlib.pyplot as plt
 
 # -------------------- EMAIL FUNCTION --------------------
 def send_email(recipient, subject, body):
@@ -32,11 +34,37 @@ def save_to_google_sheet(data_row):
     sheet = client.open("PM-Personality_Test").sheet1
     sheet.append_row(data_row)
 
+def load_data():
+    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["gcp_service_account"], scope)
+    client = gspread.authorize(creds)
+    sheet = client.open("PM-Personality_Test").sheet1
+    data = sheet.get_all_records()
+    return pd.DataFrame(data)
+
 # -------------------- APP CONFIG --------------------
 st.set_page_config(page_title="PM Personality Test", layout="wide")
 
 if "page" not in st.session_state:
     st.session_state.page = 1
+
+# -------------------- ADMIN PAGE --------------------
+if st.sidebar.text_input("Admin password") == "admin123":
+    st.sidebar.success("Access granted")
+    st.title("📊 Admin Dashboard")
+    df = load_data()
+
+    st.subheader("🔢 Raw Data")
+    st.dataframe(df)
+
+    st.subheader("📊 PM Type Distribution (Pie Chart)")
+    chart_data = df["PM Type(s)"].value_counts()
+    fig, ax = plt.subplots()
+    ax.pie(chart_data.values, labels=chart_data.index, autopct="%1.1f%%", startangle=90)
+    ax.axis("equal")
+    st.pyplot(fig)
+
+    st.stop()
 
 # -------------------- TYPE + AVENGER DEFINITIONS --------------------
 type_descriptions = {
@@ -60,145 +88,13 @@ avenger_traits = {
     "Other": "🌟 Unique — just like your hero choice!",
 }
 
-# -------------------- PAGE 1: USER INFO --------------------
-if st.session_state.page == 1:
-    st.title("👤 Welcome to the PM Personality Test")
-    st.subheader("Step 1: Tell us a bit about yourself")
-
-    country = st.text_input("🌍 What country are you from?")
-    role_options = ["Project Manager", "PMO", "Product Manager", "Delivery Manager", "Program Manager", "Other"]
-    role_selected = st.selectbox("🎯 Choose your role", role_options)
-    other_role = st.text_input("Please specify your role:") if role_selected == "Other" else ""
-    avenger = st.selectbox("🤸 Who is your favorite Avenger?", list(avenger_traits.keys()))
-    email = st.text_input("📧 Your Email Address")
-    consent = st.checkbox("I agree to the GDPR terms and data usage policy.")
-
-    if st.button("Start the Test ➔"):
-        if not (country and email and consent):
-            st.warning("Please complete all required fields and accept the privacy notice.")
-        else:
-            st.session_state.country = country
-            st.session_state.role = other_role if role_selected == "Other" else role_selected
-            st.session_state.avenger = avenger
-            st.session_state.email = email
-            st.session_state.page = 2
-
-# -------------------- PAGE 2: QUIZ --------------------
-elif st.session_state.page == 2:
-    st.title("🧠 PM Personality Quiz")
-
-    questions = [ ... ]  # Your questions here (omitted for space)
-
-    type_keys = list(type_descriptions.keys())
-    scores = {key: 0 for key in type_keys}
-    answers = []
-
-    with st.form("quiz_form"):
-        for idx, q in enumerate(questions):
-            answer = st.radio(f"Q{idx+1}. {q}", ["A. Yes", "B. No"], key=f"q{idx+1}")
-            answers.append(answer)
-            if answer.startswith("A"):
-                type_index = idx // 5
-                scores[type_keys[type_index]] += 1
-        submitted = st.form_submit_button("Submit")
-
-    if submitted:
-        st.session_state.page = 3
-        st.session_state.scores = scores
-        st.session_state.answers = answers
-
-# -------------------- PAGE 3: RESULTS --------------------
-elif st.session_state.page == 3:
-    st.title("🎉 Your Results")
-
-    scores = st.session_state.scores
-    answers = st.session_state.answers
-    top_score = max(scores.values())
-    top_types = [ptype for ptype, score in scores.items() if score == top_score]
-
-    descriptions = []
-    holland_codes = []
-
-    st.subheader("🧠 Your PM Personality Type(s):")
-    for ptype in top_types:
-        desc, holland, icon = type_descriptions[ptype]
-        st.markdown(f"**{icon} {ptype}**\n\n{desc}\n\n🧉 *Holland Code Match: {holland}*\n")
-        descriptions.append(desc)
-        holland_codes.append(holland)
-
-    avenger = st.session_state.avenger
-    avenger_desc = avenger_traits.get(avenger, "🌟 Unique — just like your hero choice!")
-
-    st.subheader(f"🤸 Your Favorite Avenger: {avenger}")
-    st.markdown(avenger_desc)
-
-    # Build and send the email
-    email_lines = [
-        "Hi there!",
-        "",
-        "Thanks for completing the PM Personality Test 🎯",
-        "",
-        "🧠 **Your PM Personality Type(s):**"
-    ]
-    for ptype in top_types:
-        desc, holland, icon = type_descriptions[ptype]
-        email_lines.append(f"{icon} {ptype}")
-        email_lines.append(desc)
-        email_lines.append(f"🧉 Holland Code Match: {holland}")
-        email_lines.append("")
-
-    email_lines.append(f"🤸 Favorite Avenger: {avenger}")
-    email_lines.append(avenger_desc)
-    email_lines.append("")
-    email_lines.append(f"🌍 Country: {st.session_state.country}")
-    email_lines.append(f"💼 Role: {st.session_state.role}")
-    email_lines.append("")
-    email_lines.append("Thank you for participating — may your projects be as epic as your personality!")
-    email_lines.append("-- PM Personality Team")
-
-    email_body = "\n".join(email_lines)
-
-    email_sent = send_email(
-        recipient=st.session_state.email,
-        subject="🧠 Your PM Personality Test Results",
-        body=email_body
-    )
-
-    if email_sent is True:
-        st.success("📧 Your result has been emailed to you!")
-    else:
-        st.error(f"❌ Failed to send email: {email_sent}")
-
-    # Save to Google Sheet
-    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    pm_types = ", ".join(top_types)
-    holland = ", ".join(holland_codes)
-    answers_raw = ", ".join(answers)
-
-    data_row = [
-        now,
-        st.session_state.email,
-        st.session_state.country,
-        st.session_state.role,
-        pm_types,
-        holland,
-        st.session_state.avenger,
-        answers_raw,
-        str(top_score)
-    ]
-
-    save_to_google_sheet(data_row)
-
-    # Share and Restart
-    st.markdown("---")
-    st.markdown("### 📨 Want your friends to try the test too?")
-    share_url = "https://pm-o-test-app.streamlit.app/"  # Your app URL here
-
-    col1, col2 = st.columns([1, 1])
-    with col1:
-        if st.button("🔁 Start Over"):
-            st.session_state.clear()
-            st.rerun()
-
-    with col2:
-        st.markdown(f"[🌐 Share This Test]({share_url})", unsafe_allow_html=True)
+avenger_images = {
+    "Iron Man": "https://i.ibb.co/7y0m1nV/ironman.jpg",
+    "Captain America": "https://i.ibb.co/7n1fcTg/captainamerica.jpg",
+    "Thor": "https://i.ibb.co/XDX85Kt/thor.jpg",
+    "Black Widow": "https://i.ibb.co/5Gr1Ly9/blackwidow.jpg",
+    "Hulk": "https://i.ibb.co/5kWJKmB/hulk.jpg",
+    "Doctor Strange": "https://i.ibb.co/xYb2N1H/doctorstrange.jpg",
+    "Spider-Man": "https://i.ibb.co/5Rph3PZ/spiderman.jpg",
+    "Black Panther": "https://i.ibb.co/DQXT5S7/blackpanther.jpg"
+}
