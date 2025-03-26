@@ -13,7 +13,6 @@ st.set_page_config(page_title="PM Personality Test", layout="wide")
 if "page" not in st.session_state:
     st.session_state.page = 1
 
-if st.sidebar.text_input("Admin password") == "admin123":
 
 # -------------------- ADMIN PAGE --------------------
 if st.sidebar.text_input("Admin password") == "admin123":
