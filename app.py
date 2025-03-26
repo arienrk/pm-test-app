@@ -2,6 +2,10 @@ import streamlit as st
 import smtplib
 from email.mime.text import MIMEText
 
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+from datetime import datetime
+
 #.................e-mail---------------------------------
 def send_email(recipient, subject, body):
     sender = st.secrets["email"]["address"]
@@ -196,3 +200,50 @@ elif st.session_state.page == 3:
     st.markdown(avenger_desc)
 
     # You can add an email send button or backend next
+
+
+now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+email = st.session_state.email
+country = st.session_state.country
+role = st.session_state.role
+avenger = st.session_state.avenger
+
+pm_types = ", ".join(top_types)
+holland = ", ".join(holland_codes)
+answers_raw = ", ".join(answers)
+
+data_row = [now, email, country, role, pm_types, holland, avenger, answers_raw, score]
+
+# Save to Google Sheet
+save_to_google_sheet(data_row)
+
+
+
+def save_to_google_sheet(data_row):
+    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["gcp_service_account"], scope)
+    client = gspread.authorize(creds)
+
+    # Open your spreadsheet by name and access the first sheet
+    sheet = client.open("PM-Personality_Test").sheet1
+    sheet.append_row(data_row)
+
+
+
+# ✅ Confirm email was sent
+st.success("📧 Your result has been emailed to you!")
+
+# ✅ Option to share with friends
+st.markdown("---")
+st.markdown("### 💌 Want your friends to try the test too?")
+share_url = "https://pm-o-test-app.streamlit.app/"  # ← Replace with your actual app link
+
+col1, col2 = st.columns([1, 1])
+with col1:
+    if st.button("🔁 Start Over"):
+        st.session_state.clear()  # Resets everything
+        st.rerun()
+
+with col2:
+    st.markdown(f"[🌐 Share This Test]({share_url})", unsafe_allow_html=True)
+
