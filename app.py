@@ -175,7 +175,7 @@ elif st.session_state.page == 2:
 
     with st.form("quiz_form"):
         for idx, q in enumerate(questions):
-            answer = st.radio(f"Q{idx+1}. {q}", ["A. Yes", "B. No"], key=f"q{idx+1}")
+            answer = st.radio(f"Q{idx+1}. {q}", ["A. Yes", "B. No"], key=f"q{idx+1}", index=None)
             answers.append(answer)
             if answer.startswith("A"):
                 type_index = idx // 5
@@ -184,9 +184,13 @@ elif st.session_state.page == 2:
         submitted = st.form_submit_button("Submit")
 
     if submitted:
-        st.session_state.page = 3
-        st.session_state.scores = scores
-        st.session_state.answers = answers
+        if None in answers:
+            st.warning("⚠️ Please answer all the questions before submitting.")
+        else:
+            st.session_state.page = 3
+            st.session_state.scores = scores
+            st.session_state.answers = answers
+
     
   
 # -------------------- PAGE 3: RESULTS --------------------
@@ -262,37 +266,34 @@ elif st.session_state.page == 3:
             st.success("✅ Your result has been emailed!")
         else:
             st.error(f"❌ Failed to send email: {result}")
+    st.markdown("---")
+    st.markdown("### 💌 Want your friends to try the test too?")
+    share_url = "https://pm-o-test-app.streamlit.app/"
 
-   st.markdown("---")
-st.markdown("### 💌 Want your friends to try the test too?")
-share_url = "https://pm-o-test-app.streamlit.app/"
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        if st.button("🔁 Start Over"):
+            st.session_state.clear()
+            st.rerun()
+    with col2:
+        st.markdown(f"[🌐 Open Test Page]({share_url})", unsafe_allow_html=True)
 
-  # 1️⃣ Start over button
-  col1, col2 = st.columns([1, 1])
-  with col1:
-      if st.button("🔁 Start Over"):
-          st.session_state.clear()
-          st.rerun()
-  with col2:
-      st.markdown(f"[🌐 Open Test Page]({share_url})", unsafe_allow_html=True)
-  
-  # 2️⃣ Social media share buttons
-  st.markdown("#### 📢 Share this test on:")
-  
-  linkedin_text = "Take the PM Personality Test and discover your project management style! 💼🧠"
-  twitter_text = "Discover your PM personality type in this fun test! 💼🧠 #ProjectManagement"
-  
-  linkedin_share = f"https://www.linkedin.com/sharing/share-offsite/?url={share_url}"
-  twitter_share = f"https://twitter.com/intent/tweet?text={twitter_text}&url={share_url}"
-  facebook_share = f"https://www.facebook.com/sharer/sharer.php?u={share_url}"
-  email_share = f"mailto:?subject=PM Personality Test&body=Check out this fun PM personality test! {share_url}"
-  
-  col3, col4, col5, col6 = st.columns(4)
-  with col3:
-      st.markdown(f"[🔗 LinkedIn]({linkedin_share})", unsafe_allow_html=True)
-  with col4:
-      st.markdown(f"[🐦 Twitter/X]({twitter_share})", unsafe_allow_html=True)
-  with col5:
-      st.markdown(f"[📘 Facebook]({facebook_share})", unsafe_allow_html=True)
-  with col6:
-      st.markdown(f"[✉️ Email]({email_share})", unsafe_allow_html=True)
+    st.markdown("#### 📢 Share this test on:")
+
+    linkedin_text = "Take the PM Personality Test and discover your project management style! 💼🧠"
+    twitter_text = "Discover your PM personality type in this fun test! 💼🧠 #ProjectManagement"
+
+    linkedin_share = f"https://www.linkedin.com/sharing/share-offsite/?url={share_url}"
+    twitter_share = f"https://twitter.com/intent/tweet?text={twitter_text}&url={share_url}"
+    facebook_share = f"https://www.facebook.com/sharer/sharer.php?u={share_url}"
+    email_share = f"mailto:?subject=PM Personality Test&body=Check out this fun PM personality test! {share_url}"
+
+    col3, col4, col5, col6 = st.columns(4)
+    with col3:
+        st.markdown(f"[🔗 LinkedIn]({linkedin_share})", unsafe_allow_html=True)
+    with col4:
+        st.markdown(f"[🐦 Twitter/X]({twitter_share})", unsafe_allow_html=True)
+    with col5:
+        st.markdown(f"[📘 Facebook]({facebook_share})", unsafe_allow_html=True)
+    with col6:
+        st.markdown(f"[✉️ Email]({email_share})", unsafe_allow_html=True)
