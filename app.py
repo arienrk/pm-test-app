@@ -174,14 +174,14 @@ elif st.session_state.page == 2:
     answers = []
 
     with st.form("quiz_form"):
-    for idx, q in enumerate(questions):
-        answer = st.radio(f"Q{idx+1}. {q}", ["A. Yes", "B. No"], key=f"q{idx+1}", index=None)
-        answers.append(answer)
-        if answer is not None and answer.startswith("A"):
-            type_index = idx // 5
-            scores[type_keys[type_index]] += 1
-
-    submitted = st.form_submit_button("Submit")
+      for idx, q in enumerate(questions):
+          answer = st.radio(f"Q{idx+1}. {q}", ["A. Yes", "B. No"], key=f"q{idx+1}", index=None)
+          answers.append(answer)
+          if answer is not None and answer.startswith("A"):
+              type_index = idx // 5
+              scores[type_keys[type_index]] += 1
+  
+      submitted = st.form_submit_button("Submit")
 
     if submitted:
         if None in answers:
