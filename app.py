@@ -19,17 +19,19 @@ if st.sidebar.text_input("Admin password") == "admin123":
 if st.sidebar.text_input("Admin password") == "admin123":
     st.sidebar.success("Access granted")
     st.title("📊 Admin Dashboard")
+
     df = load_data()
 
     st.subheader("🔢 Raw Data")
     st.dataframe(df)
 
     st.subheader("📊 PM Type Distribution (Pie Chart)")
-    chart_data = df["PM Type(s)"].value_counts()
-    fig, ax = plt.subplots()
-    ax.pie(chart_data.values, labels=chart_data.index, autopct="%1.1f%%", startangle=90)
-    ax.axis("equal")
-    st.pyplot(fig)
+    if "PM Type(s)" in df.columns:
+        chart_data = df["PM Type(s)"].value_counts()
+        fig, ax = plt.subplots()
+        ax.pie(chart_data.values, labels=chart_data.index, autopct="%1.1f%%", startangle=90)
+        ax.axis("equal")
+        st.pyplot(fig)
 
     st.stop()
 
