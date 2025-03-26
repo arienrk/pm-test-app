@@ -293,7 +293,7 @@ elif st.session_state.page == 3:
     body = f"Check out this fun PM personality test! {share_url}"
     email_share = f"mailto:?subject={urllib.parse.quote(subject)}&body={urllib.parse.quote(body)}"
     
-    col3, col4, col5 = st.columns(4)
+    col3, col4, col5 = st.columns(3)
     with col3:
         st.markdown(f"[🔗 LinkedIn]({linkedin_share})", unsafe_allow_html=True)
     with col4:
