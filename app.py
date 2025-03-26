@@ -13,7 +13,6 @@ st.set_page_config(page_title="PM Personality Test", layout="wide")
 if "page" not in st.session_state:
     st.session_state.page = 1
 
-
 # -------------------- TYPE + AVENGER DEFINITIONS --------------------
 type_descriptions = {
     "The Gantt Captain": ("You thrive on structure, execution, and getting things done step by step.", "Realistic (R)", "📈"),
@@ -122,7 +121,7 @@ elif st.session_state.page == 2:
             answer = st.radio(f"Q{idx+1}. {q}", ["A. Yes", "B. No"], key=f"q{idx+1}")
             answers.append(answer)
             if answer.startswith("A"):
-                type_index = idx // 5  # 5 questions per type
+                type_index = idx // 5
                 scores[type_keys[type_index]] += 1
 
         submitted = st.form_submit_button("Submit")
@@ -150,16 +149,46 @@ elif st.session_state.page == 3:
         descriptions.append(desc)
         holland_codes.append(holland)
 
-    # Favorite Avenger
     avenger = st.session_state.avenger
     avenger_desc = avenger_traits.get(avenger, "🌟 Unique — just like your hero choice!")
 
     st.subheader(f"🦸 Your Favorite Avenger: {avenger}")
     st.markdown(avenger_desc)
 
+    # ---------------- EMAIL & Share Button ----------------
+    email_lines = [
+        "Hi there!",
+        "",
+        "Thanks for completing the PM Personality Test 🎯",
+        "",
+        "🧠 **Your PM Personality Type(s):**"
+    ]
 
-# ✅ Option to share with friends
-if st.session_state.get("page") == 3:
+    for ptype in top_types:
+        desc, holland, icon = type_descriptions[ptype]
+        email_lines.append(f"{icon} {ptype}")
+        email_lines.append(f"{desc}")
+        email_lines.append(f"🧩 Holland Code Match: {holland}")
+        email_lines.append("")
+
+    email_lines.append(f"🦸 **Your Favorite Avenger:** {avenger}")
+    email_lines.append(avenger_traits.get(avenger, "🌟 Unique — just like your hero choice!"))
+    email_lines.append("")
+    email_lines.append(f"🌍 Country: {st.session_state.country}")
+    email_lines.append(f"💼 Role: {st.session_state.role}")
+    email_lines.append("")
+    email_lines.append("Thank you for participating — may your projects be as epic as your personality!")
+    email_lines.append("-- PM Personality Team")
+
+    email_body = "\n".join(email_lines)
+
+    if st.button("📧 Send my results by email"):
+        result = send_email(st.session_state.email, "Your PM Personality Test Results", email_body)
+        if result is True:
+            st.success("✅ Your result has been emailed!")
+        else:
+            st.error(f"❌ Failed to send email: {result}")
+
     st.markdown("---")
     st.markdown("### 💌 Want your friends to try the test too?")
     share_url = "https://pm-o-test-app.streamlit.app/"
@@ -170,103 +199,3 @@ if st.session_state.get("page") == 3:
             st.rerun()
     with col2:
         st.markdown(f"[🌐 Share This Test]({share_url})", unsafe_allow_html=True)
-
-
-# -------------------- EMAIL FUNCTION --------------------
-def send_email(recipient, subject, body):
-    sender = st.secrets["email"]["address"]
-    app_password = st.secrets["email"]["app_password"]
-
-    msg = MIMEText(body, "plain", "utf-8")
-    msg["Subject"] = subject
-    msg["From"] = f"PM Personality Team <{sender}>"
-    msg["To"] = recipient
-
-    try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(sender, app_password)
-            server.send_message(msg)
-        return True
-    except Exception as e:
-        return f"Email sending failed: {str(e)}"
-        
-# --------------Build the result email body-------------
-email_lines = [
-    "Hi there!",
-    "",
-    "Thanks for completing the PM Personality Test 🎯",
-    "",
-    "🧠 **Your PM Personality Type(s):**"
-]
-
-# Append each top type
-for ptype in top_types:
-    desc, holland, icon = type_descriptions[ptype]
-    email_lines.append(f"{icon} {ptype}")
-    email_lines.append(f"{desc}")
-    email_lines.append(f"🧩 Holland Code Match: {holland}")
-    email_lines.append("")
-
-# Add Avenger info
-email_lines.append(f"🦸 **Your Favorite Avenger:** {avenger}")
-email_lines.append(avenger_traits.get(avenger, "🌟 Unique — just like your hero choice!"))
-email_lines.append("")
-
-# Add other info
-email_lines.append(f"🌍 Country: {st.session_state.country}")
-email_lines.append(f"💼 Role: {st.session_state.role}")
-email_lines.append("")
-email_lines.append("Thank you for participating — may your projects be as epic as your personality!")
-email_lines.append("-- PM Personality Team")
-
-# Final email body string
-email_body = "\n".join(email_lines)
-
-
-if st.button("📧 Send my results by email"):
-    result = send_email(st.session_state.email, "Your PM Personality Test Results", email_body)
-    if result is True:
-        st.success("✅ Your result has been emailed!")
-    else:
-        st.error(f"❌ Failed to send email: {result}")
-
-
-
-# -------------------- GOOGLE SHEET FUNCTION --------------------
-def save_to_google_sheet(data_row):
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["gcp_service_account"], scope)
-    client = gspread.authorize(creds)
-
-    sheet = client.open("PM-Personality_Test").sheet1
-    sheet.append_row(data_row)
-
-def load_data():
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["gcp_service_account"], scope)
-    client = gspread.authorize(creds)
-    sheet = client.open("PM-Personality_Test").sheet1
-    data = sheet.get_all_records()
-    return pd.DataFrame(data)
-
-
-# -------------------- ADMIN PAGE --------------------
-if st.sidebar.text_input("Admin password") == "admin123":
-    st.sidebar.success("Access granted")
-    st.title("📊 Admin Dashboard")
-    df = load_data()
-
-    st.subheader("🔢 Raw Data")
-    st.dataframe(df)
-
-    st.subheader("📊 PM Type Distribution (Pie Chart)")
-    chart_data = df["PM Type(s)"].value_counts()
-    fig, ax = plt.subplots()
-    ax.pie(chart_data.values, labels=chart_data.index, autopct="%1.1f%%", startangle=90)
-    ax.axis("equal")
-    st.pyplot(fig)
-
-    st.stop()
-
-
-
