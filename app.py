@@ -1,4 +1,27 @@
 import streamlit as st
+import smtplib
+from email.mime.text import MIMEText
+
+#.................e-mail---------------------------------
+def send_email(recipient, subject, body):
+    sender = st.secrets["email"]["address"]
+    app_password = st.secrets["email"]["app_password"]
+
+    # Create the email message
+    msg = MIMEText(body, "plain", "utf-8")
+    msg["Subject"] = subject
+    msg["From"] = f"PM Personality Team <{sender}>"
+    msg["To"] = recipient
+
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(sender, app_password)
+            server.send_message(msg)
+        return True
+    except Exception as e:
+        # Optional: log or show the error more clearly
+        return f"Email sending failed: {str(e)}"
+#.................e-mail---------------------------------
 
 st.set_page_config(page_title="PM Personality Test", layout="wide")
 
@@ -111,6 +134,41 @@ elif st.session_state.page == 2:
         st.session_state.page = 3
         st.session_state.scores = scores
         st.session_state.answers = answers
+        
+#------------e-mail------------
+
+# Build the result email body
+email_lines = [
+    "Hi there!",
+    "",
+    "Thanks for completing the PM Personality Test 🎯",
+    "",
+    "🧠 **Your PM Personality Type(s):**"
+]
+
+# Append each top type
+for ptype in top_types:
+    desc, holland, icon = type_descriptions[ptype]
+    email_lines.append(f"{icon} {ptype}")
+    email_lines.append(f"{desc}")
+    email_lines.append(f"🧩 Holland Code Match: {holland}")
+    email_lines.append("")
+
+# Add Avenger info
+email_lines.append(f"🦸 **Your Favorite Avenger:** {avenger}")
+email_lines.append(avenger_traits.get(avenger, "🌟 Unique — just like your hero choice!"))
+email_lines.append("")
+
+# Add other info
+email_lines.append(f"🌍 Country: {st.session_state.country}")
+email_lines.append(f"💼 Role: {st.session_state.role}")
+email_lines.append("")
+email_lines.append("Thank you for participating — may your projects be as epic as your personality!")
+email_lines.append("-- PM Personality Team")
+
+# Final email body string
+email_body = "\n".join(email_lines)
+
 
 # -------------------- PAGE 3: RESULTS --------------------
 elif st.session_state.page == 3:
