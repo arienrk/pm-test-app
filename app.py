@@ -7,6 +7,12 @@ from datetime import datetime
 import pandas as pd
 import matplotlib.pyplot as plt
 
+# -------------------- APP CONFIG --------------------
+st.set_page_config(page_title="PM Personality Test", layout="wide")
+
+if "page" not in st.session_state:
+    st.session_state.page = 1
+
 # -------------------- PAGE 1 --------------------
 if st.session_state.page == 1:
     st.title("👤 Welcome to the PM Personality Test")
@@ -157,11 +163,6 @@ def load_data():
     data = sheet.get_all_records()
     return pd.DataFrame(data)
 
-# -------------------- APP CONFIG --------------------
-st.set_page_config(page_title="PM Personality Test", layout="wide")
-
-if "page" not in st.session_state:
-    st.session_state.page = 1
 
 # -------------------- ADMIN PAGE --------------------
 if st.sidebar.text_input("Admin password") == "admin123":
