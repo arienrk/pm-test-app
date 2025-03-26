@@ -127,6 +127,7 @@ if st.session_state.page == 1:
             st.session_state.avenger = avenger
             st.session_state.email = email
             st.session_state.page = 2
+            st.experimental_rerun()
 
 # -------------------- PAGE 2 --------------------
 elif st.session_state.page == 2:
@@ -192,6 +193,7 @@ elif st.session_state.page == 2:
             st.session_state.page = 3
             st.session_state.scores = scores
             st.session_state.answers = answers
+            st.experimental_rerun()  
 
     
   
